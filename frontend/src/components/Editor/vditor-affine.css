@@ -1,0 +1,39 @@
+/* Custom AFFiNE Paper Look for Vditor */
+.vditor-affine-wrapper {
+  max-width: var(--affine-paper-width);
+  margin: 0 auto;
+  padding: 40px 40px 100px 40px;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.vditor-affine-wrapper .vditor {
+  border: none !important;
+  background: transparent !important;
+}
+
+.vditor-affine-wrapper .vditor-toolbar {
+  border: 1px solid var(--affine-border-color) !important;
+  background-color: var(--affine-background-secondary) !important;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  box-shadow: var(--affine-shadow-card);
+  padding: 4px 8px !important;
+}
+
+.vditor-affine-wrapper .vditor-wysiwyg {
+  background: transparent !important;
+  color: var(--affine-text-primary) !important;
+  font-size: 16px;
+  line-height: 1.7;
+  padding: 0 !important;
+}
+
+.vditor-affine-wrapper .vditor-reset {
+  color: var(--affine-text-primary) !important;
+}
+
+.vditor-affine-wrapper .vditor-ir {
+  background: transparent !important;
+  color: var(--affine-text-primary) !important;
+}
