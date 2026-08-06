@@ -3,12 +3,15 @@ import './styles/affine-theme.css';
 import { Sidebar, DocItem } from './components/Sidebar/Sidebar';
 import { VditorEditor } from './components/Editor/VditorEditor';
 import { AIPanel } from './components/AIPanel/AIPanel';
+import { DocHeader } from './components/Header/DocHeader';
 
 export const App: React.FC = () => {
   const [docs, setDocs] = useState<DocItem[]>([]);
   const [currentDocId, setCurrentDocId] = useState<string | null>(null);
   const [currentContent, setCurrentContent] = useState<string>('');
   const [selectedText, setSelectedText] = useState<string>('');
+
+  const currentDoc = docs.find((d) => d.id === currentDocId);
 
   const fetchDocs = async () => {
     try {
@@ -91,13 +94,22 @@ export const App: React.FC = () => {
         onCreateDoc={handleCreateDoc}
         onDeleteDoc={handleDeleteDoc}
       />
-      <div style={{ flex: 1, height: '100%', overflowY: 'auto' }}>
+      <div style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
         {currentDocId ? (
-          <VditorEditor
-            value={currentContent}
-            onChange={handleContentChange}
-            onSelectText={setSelectedText}
-          />
+          <>
+            <DocHeader
+              docId={currentDocId}
+              docTitle={currentDoc?.title || ''}
+              onPublished={fetchDocs}
+            />
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <VditorEditor
+                value={currentContent}
+                onChange={handleContentChange}
+                onSelectText={setSelectedText}
+              />
+            </div>
+          </>
         ) : (
           <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--affine-text-secondary)' }}>
             请选择或新建一篇笔记开始编辑
