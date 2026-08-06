@@ -6,6 +6,8 @@ export interface DocItem {
   title: string;
   parentId?: string;
   icon?: string;
+  published?: boolean;
+  publishedAt?: string;
 }
 
 interface SidebarProps {

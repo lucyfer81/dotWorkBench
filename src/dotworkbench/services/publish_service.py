@@ -19,18 +19,50 @@ class PublishService:
         return slug
 
     def generate_metadata(self, title: str, content: str) -> dict:
-        # 提取摘要（正文前100字）与默认标签
-        clean_content = re.sub(r'#+\s+|\*+|_|`', '', content).strip()
-        description = clean_content[:100] if clean_content else title
-        tags = ["Blog"]
-        if "astro" in content.lower():
-            tags.append("Astro")
-        if "cloudflare" in content.lower():
-            tags.append("Cloudflare")
-        return {
-            "description": description,
-            "tags": list(set(tags))
-        }
+        try:
+            from google import genai
+            from google.genai import types
+            import json
+            import os
+            
+            # 检查是否有 API Key 环境变量，如果没有直接走 fallback
+            if not os.environ.get("GEMINI_API_KEY"):
+                raise ValueError("No GEMINI_API_KEY found")
+                
+            client = genai.Client()
+            prompt = f"Analyze the following blog post and provide a short description (under 100 chars) and 1-3 relevant tags as a JSON object with keys 'description' and 'tags' (list of strings).\n\nTitle: {title}\nContent: {content}"
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                ),
+            )
+            data = json.loads(response.text)
+            
+            tags = data.get("tags", [])
+            if not isinstance(tags, list):
+                tags = ["Blog"]
+            if not tags:
+                tags = ["Blog"]
+                
+            return {
+                "description": data.get("description", title)[:100],
+                "tags": tags
+            }
+        except Exception:
+            # Fallback to regex
+            clean_content = re.sub(r'#+\s+|\*+|_|`', '', content).strip()
+            description = clean_content[:100] if clean_content else title
+            tags = ["Blog"]
+            if "astro" in content.lower():
+                tags.append("Astro")
+            if "cloudflare" in content.lower():
+                tags.append("Cloudflare")
+            return {
+                "description": description,
+                "tags": list(set(tags))
+            }
 
     def publish_doc(self, doc_id: str) -> dict:
         doc = self.doc_service.get_doc(doc_id)
@@ -78,13 +110,12 @@ class PublishService:
         now_iso = datetime.now(timezone.utc).isoformat()
         
         # 保存本地 frontmatter 扩展属性
-        filepath = self.doc_service._get_file_path(doc_id)
-        local_post = frontmatter.load(filepath)
-        local_post["published"] = True
-        local_post["blogSlug"] = slug
-        local_post["publishedAt"] = now_iso
-        with open(filepath, "w", encoding="utf-8") as f:
-            frontmatter.dump(local_post, f)
+        self.doc_service.update_doc(
+            doc_id,
+            published=True,
+            blogSlug=slug,
+            publishedAt=now_iso
+        )
 
         return {
             "success": True,

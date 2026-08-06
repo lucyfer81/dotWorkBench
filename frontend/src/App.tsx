@@ -100,6 +100,8 @@ export const App: React.FC = () => {
             <DocHeader
               docId={currentDocId}
               docTitle={currentDoc?.title || ''}
+              published={currentDoc?.published}
+              publishedAt={currentDoc?.publishedAt}
               onPublished={fetchDocs}
             />
             <div style={{ flex: 1, overflowY: 'auto' }}>

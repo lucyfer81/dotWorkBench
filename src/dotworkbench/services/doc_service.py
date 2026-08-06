@@ -78,7 +78,7 @@ class DocService:
             "icon": "📝"
         }
 
-    def update_doc(self, doc_id: str, title: str | None = None, content: str | None = None) -> dict:
+    def update_doc(self, doc_id: str, title: str | None = None, content: str | None = None, **kwargs) -> dict:
         filepath = self._get_file_path(doc_id)
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"Document {doc_id} not found")
@@ -89,12 +89,16 @@ class DocService:
             post["title"] = title
         if content is not None:
             post.content = content
+            
+        for k, v in kwargs.items():
+            post[k] = v
+            
         post["updatedAt"] = now
 
         with open(filepath, "w", encoding="utf-8") as f:
             frontmatter.dump(post, f)
 
-        return {
+        res = {
             "id": doc_id,
             "title": post.get("title"),
             "parentId": post.get("parentId"),
@@ -103,6 +107,9 @@ class DocService:
             "icon": post.get("icon", "📝"),
             "content": post.content
         }
+        for k in kwargs.keys():
+            res[k] = post.get(k)
+        return res
 
     def delete_doc(self, doc_id: str) -> bool:
         filepath = self._get_file_path(doc_id)

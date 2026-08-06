@@ -4,10 +4,12 @@ import './doc-header.css';
 interface DocHeaderProps {
   docId: string | null;
   docTitle: string;
+  published?: boolean;
+  publishedAt?: string;
   onPublished?: () => void;
 }
 
-export const DocHeader: React.FC<DocHeaderProps> = ({ docId, docTitle, onPublished }) => {
+export const DocHeader: React.FC<DocHeaderProps> = ({ docId, docTitle, published, publishedAt, onPublished }) => {
   const [publishing, setPublishing] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -39,7 +41,18 @@ export const DocHeader: React.FC<DocHeaderProps> = ({ docId, docTitle, onPublish
 
   return (
     <div className="doc-header">
-      <div className="doc-header-title">{docTitle || '未命名文档'}</div>
+      <div className="doc-header-title">
+        {docTitle || '未命名文档'}
+        {published ? (
+          <span className="publish-badge published">
+            已发布 {publishedAt ? new Date(publishedAt).toLocaleDateString() : ''}
+          </span>
+        ) : (
+          <span className="publish-badge unpublished">
+            未发布
+          </span>
+        )}
+      </div>
       <div className="doc-header-actions">
         {docId && (
           <button
