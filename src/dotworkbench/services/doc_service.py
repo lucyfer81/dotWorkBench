@@ -27,7 +27,10 @@ class DocService:
                         "parentId": post.get("parentId"),
                         "createdAt": post.get("createdAt"),
                         "updatedAt": post.get("updatedAt"),
-                        "icon": post.get("icon", "📝")
+                        "icon": post.get("icon", "📝"),
+                        "published": post.get("published", False),
+                        "blogSlug": post.get("blogSlug"),
+                        "publishedAt": post.get("publishedAt")
                     })
                 except Exception:
                     continue
@@ -45,7 +48,10 @@ class DocService:
             "createdAt": post.get("createdAt"),
             "updatedAt": post.get("updatedAt"),
             "icon": post.get("icon", "📝"),
-            "content": post.content
+            "content": post.content,
+            "published": post.get("published", False),
+            "blogSlug": post.get("blogSlug"),
+            "publishedAt": post.get("publishedAt")
         }
 
     def create_doc(self, title: str = "未命名文档", parent_id: str | None = None) -> dict:
