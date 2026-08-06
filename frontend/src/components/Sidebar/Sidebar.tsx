@@ -18,8 +18,8 @@ interface SidebarProps {
   nodes: NodeItem[];
   currentDocId: string | null;
   onSelectDoc: (id: string) => void;
-  onCreateDoc: (parentId?: string) => void;
-  onCreateFolder: (parentId?: string) => void;
+  onCreateDoc: (parentId?: string) => Promise<string | undefined>;
+  onCreateFolder: (parentId?: string) => Promise<string | undefined>;
   onDeleteDoc: (id: string, e: React.MouseEvent) => void;
   onDeleteFolder: (id: string, title: string, e: React.MouseEvent) => void;
   onRenameNode: (id: string, type: 'folder' | 'doc', newTitle: string) => void;
@@ -158,7 +158,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }}
               />
             ) : (
-              <span style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span
+                onDoubleClick={(e) => handleStartRename(node, e)}
+                title="双击进行重命名"
+                style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+              >
                 {node.title || (isFolder ? '未命名文件夹' : '未命名文档')}
               </span>
             )}
@@ -168,10 +172,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isFolder && (
               <>
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    onCreateDoc(node.id);
+                    const newId = await onCreateDoc(node.id);
                     setExpandedIds(prev => new Set(prev).add(node.id));
+                    if (newId) {
+                      setEditingId(newId);
+                      setEditingTitle('未命名文档');
+                    }
                   }}
                   style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
                   title="在文件夹内新建文档"
@@ -179,10 +187,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Plus size={14} color="var(--affine-text-secondary)" />
                 </button>
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    onCreateFolder(node.id);
+                    const newId = await onCreateFolder(node.id);
                     setExpandedIds(prev => new Set(prev).add(node.id));
+                    if (newId) {
+                      setEditingId(newId);
+                      setEditingTitle('新建文件夹');
+                    }
                   }}
                   style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
                   title="在文件夹内新建子文件夹"
@@ -194,8 +206,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               onClick={(e) => handleStartRename(node, e)}
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6 }}
-              title="重命名"
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.8 }}
+              title="重命名 (也可直接双击名称)"
             >
               <Edit2 size={13} color="var(--affine-text-secondary)" />
             </button>
@@ -235,7 +247,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       
       <div style={{ padding: '0 12px 12px 12px', display: 'flex', gap: '8px' }}>
         <button
-          onClick={() => onCreateDoc()}
+          onClick={async () => {
+            const newId = await onCreateDoc();
+            if (newId) {
+              setEditingId(newId);
+              setEditingTitle('未命名文档');
+            }
+          }}
           style={{
             flex: 1,
             padding: '8px 10px',
@@ -255,7 +273,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Plus size={15} /> 新建文档
         </button>
         <button
-          onClick={() => onCreateFolder()}
+          onClick={async () => {
+            const newId = await onCreateFolder();
+            if (newId) {
+              setEditingId(newId);
+              setEditingTitle('新建文件夹');
+            }
+          }}
           style={{
             padding: '8px 10px',
             backgroundColor: 'transparent',

@@ -72,6 +72,7 @@ export const App: React.FC = () => {
         const newDoc = await res.json();
         await fetchNodes();
         setCurrentDocId(newDoc.id);
+        return newDoc.id as string;
       }
     } catch (e) {
       console.error('Failed to create doc', e);
@@ -86,7 +87,9 @@ export const App: React.FC = () => {
         body: JSON.stringify({ title: '新建文件夹', parentId })
       });
       if (res.ok) {
+        const newFolder = await res.json();
         await fetchNodes();
+        return newFolder.id as string;
       }
     } catch (e) {
       console.error('Failed to create folder', e);
