@@ -53,19 +53,20 @@ class FolderService:
             json.dump(folder_data, f, ensure_ascii=False, indent=2)
         return folder_data
 
-    def update_folder(self, folder_id: str, title: str | None = None, parent_id: str | None = None) -> dict:
+    def update_folder(self, folder_id: str, title: str | None = None, parent_id: str | None = None, update_parent_id: bool = False) -> dict:
         folder = self.get_folder(folder_id)
         
-        if parent_id is not None and parent_id != folder.get("parentId"):
-            if parent_id == folder_id:
-                raise ValueError("Cannot set folder as its own parent")
-            # Check for cycles
-            all_folders = {f["id"]: f for f in self.list_folders()}
-            curr = parent_id
-            while curr:
-                if curr == folder_id:
-                    raise ValueError("Cannot move folder into its own subfolder")
-                curr = all_folders.get(curr, {}).get("parentId")
+        if update_parent_id or parent_id is not None:
+            if parent_id is not None:
+                if parent_id == folder_id:
+                    raise ValueError("Cannot set folder as its own parent")
+                # Check for cycles
+                all_folders = {f["id"]: f for f in self.list_folders()}
+                curr = parent_id
+                while curr:
+                    if curr == folder_id:
+                        raise ValueError("Cannot move folder into its own subfolder")
+                    curr = all_folders.get(curr, {}).get("parentId")
             folder["parentId"] = parent_id
 
         if title is not None:

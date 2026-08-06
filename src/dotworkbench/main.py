@@ -60,7 +60,7 @@ def create_doc(req: CreateDocRequest):
 def update_doc(doc_id: str, req: UpdateDocRequest):
     try:
         kwargs = {}
-        if req.parentId is not None:
+        if "parentId" in req.model_fields_set:
             kwargs["parentId"] = req.parentId
         return doc_service.update_doc(doc_id, title=req.title, content=req.content, **kwargs)
     except FileNotFoundError:
@@ -80,7 +80,11 @@ def create_folder(req: CreateFolderRequest):
 @app.put("/api/folders/{folder_id}")
 def update_folder(folder_id: str, req: UpdateFolderRequest):
     try:
-        return folder_service.update_folder(folder_id, title=req.title, parent_id=req.parentId)
+        kwargs = {}
+        if "parentId" in req.model_fields_set:
+            kwargs["parent_id"] = req.parentId
+            kwargs["update_parent_id"] = True
+        return folder_service.update_folder(folder_id, title=req.title, **kwargs)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Folder not found")
     except ValueError as e:

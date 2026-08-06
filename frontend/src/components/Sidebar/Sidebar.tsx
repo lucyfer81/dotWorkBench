@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {isFolder ? (
-              isExpanded ? <FolderOpen size={16} color="#4f46e5" /> : <Folder size={16} color="#4f46e5" />
+              isExpanded ? <FolderOpen size={16} color="var(--affine-brand-color)" /> : <Folder size={16} color="var(--affine-brand-color)" />
             ) : (
               <FileText size={16} color="var(--affine-text-secondary)" />
             )}

@@ -52,3 +52,46 @@ def test_api_nodes_and_folders():
     # Verify empty nodes
     res_nodes_after = client.get("/api/nodes")
     assert len(res_nodes_after.json()) == 0
+
+
+def test_move_nested_doc_and_folder_to_root():
+    client = TestClient(app)
+
+    # 1. Create parent folder
+    res_p = client.post("/api/folders", json={"title": "Parent Folder"})
+    assert res_p.status_code == 200
+    parent_id = res_p.json()["id"]
+
+    # 2. Create child folder inside parent folder
+    res_cf = client.post("/api/folders", json={"title": "Child Folder", "parentId": parent_id})
+    assert res_cf.status_code == 200
+    child_folder_id = res_cf.json()["id"]
+    assert res_cf.json()["parentId"] == parent_id
+
+    # 3. Create child doc inside parent folder
+    res_cd = client.post("/api/docs", json={"title": "Child Doc", "parentId": parent_id})
+    assert res_cd.status_code == 200
+    child_doc_id = res_cd.json()["id"]
+    assert res_cd.json()["parentId"] == parent_id
+
+    # 4. Move child doc back to root (parentId: null)
+    res_move_doc = client.put(f"/api/docs/{child_doc_id}", json={"parentId": None})
+    assert res_move_doc.status_code == 200
+    assert res_move_doc.json()["parentId"] is None
+
+    # Verify doc parentId is None in GET /api/docs/{doc_id}
+    res_get_doc = client.get(f"/api/docs/{child_doc_id}")
+    assert res_get_doc.json()["parentId"] is None
+
+    # 5. Move child folder back to root (parentId: null)
+    res_move_folder = client.put(f"/api/folders/{child_folder_id}", json={"parentId": None})
+    assert res_move_folder.status_code == 200
+    assert res_move_folder.json()["parentId"] is None
+
+    # Verify folder parentId is None in GET /api/nodes
+    res_nodes = client.get("/api/nodes")
+    assert res_nodes.status_code == 200
+    nodes = {n["id"]: n for n in res_nodes.json()}
+    assert nodes[child_folder_id]["parentId"] is None
+    assert nodes[child_doc_id]["parentId"] is None
+

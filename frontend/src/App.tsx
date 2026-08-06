@@ -25,12 +25,19 @@ export const App: React.FC = () => {
     try {
       const res = await fetch('/api/nodes');
       if (res.ok) {
-        const data = await res.json();
+        const data: NodeItem[] = await res.json();
         setNodes(data);
-        if (!currentDocId && data.length > 0) {
-          const firstDoc = data.find((n: NodeItem) => n.type === 'doc');
-          if (firstDoc) setCurrentDocId(firstDoc.id);
-        }
+        setCurrentDocId(prevId => {
+          if (!prevId && data.length > 0) {
+            const firstDoc = data.find((n: NodeItem) => n.type === 'doc');
+            return firstDoc ? firstDoc.id : null;
+          }
+          if (prevId && !data.some((n: NodeItem) => n.id === prevId)) {
+            setCurrentDoc(null);
+            return null;
+          }
+          return prevId;
+        });
       }
     } catch (e) {
       console.error('Failed to fetch nodes', e);

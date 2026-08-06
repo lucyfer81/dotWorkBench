@@ -90,6 +90,9 @@ class DocService:
         if content is not None:
             post.content = content
             
+        if "parentId" in kwargs:
+            post["parentId"] = kwargs["parentId"]
+
         for k, v in kwargs.items():
             post[k] = v
             
