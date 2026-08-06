@@ -4,9 +4,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from dotworkbench.services.doc_service import DocService
+from dotworkbench.services.publish_service import PublishService
 
 app = FastAPI(title="dotWorkbench API")
 doc_service = DocService()
+publish_service = PublishService(doc_service=doc_service)
 
 class CreateDocRequest(BaseModel):
     title: str = "未命名文档"
@@ -48,6 +50,15 @@ def delete_doc(doc_id: str):
     if not success:
         raise HTTPException(status_code=404, detail="Document not found")
     return {"success": True}
+
+@app.post("/api/docs/{doc_id}/publish")
+def publish_doc(doc_id: str):
+    try:
+        return publish_service.publish_doc(doc_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Document not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/ai/chat")
 def ai_chat(req: AIChatRequest):
