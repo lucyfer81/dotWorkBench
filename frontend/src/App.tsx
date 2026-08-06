@@ -70,8 +70,9 @@ export const App: React.FC = () => {
       });
       if (res.ok) {
         const newDoc = await res.json();
-        await fetchNodes();
+        setNodes(prev => [...prev, { ...newDoc, type: 'doc' }]);
         setCurrentDocId(newDoc.id);
+        fetchNodes();
         return newDoc.id as string;
       }
     } catch (e) {
@@ -88,7 +89,8 @@ export const App: React.FC = () => {
       });
       if (res.ok) {
         const newFolder = await res.json();
-        await fetchNodes();
+        setNodes(prev => [...prev, { ...newFolder, type: 'folder' }]);
+        fetchNodes();
         return newFolder.id as string;
       }
     } catch (e) {
@@ -124,6 +126,11 @@ export const App: React.FC = () => {
   };
 
   const handleRenameNode = async (id: string, type: 'folder' | 'doc', newTitle: string) => {
+    // Optimistically update nodes in local state
+    setNodes(prev => prev.map(n => n.id === id ? { ...n, title: newTitle } : n));
+    if (type === 'doc' && currentDocId === id && currentDoc) {
+      setCurrentDoc(prev => prev ? { ...prev, title: newTitle } : null);
+    }
     try {
       const endpoint = type === 'folder' ? `/api/folders/${id}` : `/api/docs/${id}`;
       const res = await fetch(endpoint, {
@@ -133,9 +140,6 @@ export const App: React.FC = () => {
       });
       if (res.ok) {
         fetchNodes();
-        if (type === 'doc' && currentDocId === id && currentDoc) {
-          setCurrentDoc({ ...currentDoc, title: newTitle });
-        }
       }
     } catch (e) {
       console.error('Failed to rename node', e);

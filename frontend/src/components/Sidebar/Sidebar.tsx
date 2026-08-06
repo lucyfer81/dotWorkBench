@@ -138,25 +138,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {isEditing ? (
-              <input
-                type="text"
-                value={editingTitle}
-                onChange={e => setEditingTitle(e.target.value)}
-                onBlur={() => handleSaveRename(node)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') handleSaveRename(node);
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSaveRename(node);
                 }}
-                autoFocus
-                onClick={e => e.stopPropagation()}
-                style={{
-                  fontSize: '13px',
-                  padding: '2px 4px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--affine-brand-color)',
-                  outline: 'none',
-                  width: '80%'
-                }}
-              />
+                style={{ display: 'inline-flex', flex: 1, margin: 0 }}
+              >
+                <input
+                  type="text"
+                  value={editingTitle}
+                  onChange={e => setEditingTitle(e.target.value)}
+                  onBlur={() => handleSaveRename(node)}
+                  autoFocus
+                  onFocus={e => e.target.select()}
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    fontSize: '13px',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--affine-brand-color)',
+                    outline: 'none',
+                    width: '90%',
+                    backgroundColor: 'var(--affine-background-primary)',
+                    color: 'var(--affine-text-primary)'
+                  }}
+                />
+              </form>
             ) : (
               <span
                 onDoubleClick={(e) => handleStartRename(node, e)}
