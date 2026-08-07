@@ -190,7 +190,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       setEditingTitle('未命名文档');
                     }
                   }}
-                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: '4px' }}
                   title="在文件夹内新建文档"
                 >
                   <Plus size={14} color="var(--affine-text-secondary)" />
@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       setEditingTitle('新建文件夹');
                     }
                   }}
-                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7 }}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: '4px' }}
                   title="在文件夹内新建子文件夹"
                 >
                   <Folder size={14} color="var(--affine-text-secondary)" />
@@ -215,7 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               onClick={(e) => handleStartRename(node, e)}
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.8 }}
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.8, padding: '4px' }}
               title="重命名 (也可直接双击名称)"
             >
               <Edit2 size={13} color="var(--affine-text-secondary)" />
@@ -223,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               onClick={(e) => isFolder ? onDeleteFolder(node.id, node.title, e) : onDeleteDoc(node.id, e)}
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6 }}
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6, padding: '4px' }}
               title={isFolder ? "删除文件夹" : "删除文档"}
             >
               <Trash2 size={13} color="var(--affine-text-secondary)" />
