@@ -3,6 +3,7 @@ import re
 import subprocess
 from datetime import datetime, timezone
 import frontmatter
+from pypinyin import lazy_pinyin
 from dotworkbench.services.doc_service import DocService
 
 class PublishService:
@@ -12,8 +13,11 @@ class PublishService:
         self.doc_service = doc_service or DocService()
 
     def slugify(self, title: str) -> str:
-        # 将非字母数字及中文字符替换为连字符
-        slug = re.sub(r'[^\w\u4e00-\u9fa5]+', '-', title.lower()).strip('-')
+        # 将中文转换为拼音数组
+        pinyin_parts = lazy_pinyin(title)
+        slug_raw = '-'.join(pinyin_parts)
+        # 将非字母数字替换为连字符，并转小写
+        slug = re.sub(r'[^a-zA-Z0-9]+', '-', slug_raw).strip('-').lower()
         if not slug:
             slug = f"post-{int(datetime.now().timestamp())}"
         return slug
@@ -69,11 +73,24 @@ class PublishService:
         title = doc.get("title", "未命名文档")
         content = doc.get("content", "")
 
+        # 始终根据当前标题重新生成最新 slug
+        slug = self.slugify(title)
+
+        # 检查是否存在旧 slug，若不同则清理旧文件
         existing_slug = doc.get("blogSlug")
-        slug = existing_slug if existing_slug else self.slugify(title)
+        if existing_slug and existing_slug != slug:
+            old_path = os.path.join(self.content_dir, f"{existing_slug}.md")
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except OSError:
+                    pass
+                subprocess.run(
+                    ["git", "rm", f"src/content/blog/{existing_slug}.md"],
+                    cwd=self.blog_dir, capture_output=True, text=True
+                )
 
         metadata = self.generate_metadata(title, content)
-
         today_str = datetime.now().strftime("%Y-%m-%d")
 
         post = frontmatter.Post(
@@ -123,3 +140,4 @@ class PublishService:
             "blogSlug": slug,
             "publishedAt": now_iso
         }
+
