@@ -85,10 +85,10 @@ class PublishService:
                     os.remove(old_path)
                 except OSError:
                     pass
-                subprocess.run(
-                    ["git", "rm", f"src/content/blog/{existing_slug}.md"],
-                    cwd=self.blog_dir, capture_output=True, text=True
-                )
+            subprocess.run(
+                ["git", "rm", "--ignore-unmatch", f"src/content/blog/{existing_slug}.md"],
+                cwd=self.blog_dir, capture_output=True, text=True
+            )
 
         metadata = self.generate_metadata(title, content)
         today_str = datetime.now().strftime("%Y-%m-%d")
