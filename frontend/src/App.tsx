@@ -147,16 +147,18 @@ export const App: React.FC = () => {
   };
 
   const handleContentChange = async (content: string) => {
-    if (!currentDocId || !currentDoc) return;
+    if (!currentDoc) return;
+    const docId = currentDoc.id;
+    const docTitle = currentDoc.title;
+
+    setCurrentDoc(prev => (prev && prev.id === docId ? { ...prev, content } : prev));
+
     try {
-      const res = await fetch(`/api/docs/${currentDocId}`, {
+      await fetch(`/api/docs/${docId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: currentDoc.title, content })
+        body: JSON.stringify({ title: docTitle, content })
       });
-      if (res.ok) {
-        setCurrentDoc(prev => prev ? { ...prev, content } : null);
-      }
     } catch (e) {
       console.error('Failed to update doc', e);
     }
@@ -182,7 +184,7 @@ export const App: React.FC = () => {
         onRenameNode={handleRenameNode}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0 }}>
-        {currentDocId && currentDoc ? (
+        {currentDocId && currentDoc && currentDoc.id === currentDocId ? (
           <>
             <DocHeader
               docId={currentDocId}
@@ -193,6 +195,7 @@ export const App: React.FC = () => {
             />
             <div style={{ flex: 1, overflowY: 'auto' }}>
               <VditorEditor
+                key={currentDocId}
                 value={currentDoc.content || ''}
                 onChange={handleContentChange}
                 onSelectText={setSelectedText}

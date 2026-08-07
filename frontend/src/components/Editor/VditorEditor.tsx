@@ -12,6 +12,11 @@ interface VditorEditorProps {
 export const VditorEditor: React.FC<VditorEditorProps> = ({ value, onChange, onSelectText }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const vditorInstance = useRef<Vditor | null>(null);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -80,7 +85,10 @@ export const VditorEditor: React.FC<VditorEditorProps> = ({ value, onChange, onS
         ],
       },
       input: (val) => {
-        onChange(val);
+        onChangeRef.current(val);
+      },
+      blur: (val) => {
+        onChangeRef.current(val);
       },
       after: () => {
         vditor.setValue(value);
@@ -90,6 +98,12 @@ export const VditorEditor: React.FC<VditorEditorProps> = ({ value, onChange, onS
 
     return () => {
       try {
+        if (vditorInstance.current) {
+          const currentVal = vditorInstance.current.getValue();
+          if (currentVal !== undefined) {
+            onChangeRef.current(currentVal);
+          }
+        }
         vditor.destroy();
       } catch (e) {
         // ignore unmount errors

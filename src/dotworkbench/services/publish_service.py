@@ -111,7 +111,7 @@ class PublishService:
 
         # 执行 Git 操作
         git_cmds = [
-            ["git", "add", f"src/content/blog/{slug}.md"],
+            ["git", "add", "-A"],
             ["git", "commit", "-m", f"publish(blog): {title}"],
             ["git", "push", "origin", "main"]
         ]
@@ -119,10 +119,23 @@ class PublishService:
         for cmd in git_cmds:
             res = subprocess.run(cmd, cwd=self.blog_dir, capture_output=True, text=True)
             # 如果 commit 没有变化允许忽略
-            if cmd[1] == "commit" and "nothing to commit" in res.stdout:
-                continue
+            if cmd[1] == "commit":
+                output = (res.stdout or "") + (res.stderr or "")
+                if "nothing to commit" in output or "no changes added to commit" in output:
+                    continue
             if res.returncode != 0 and "everything up-to-date" not in res.stderr:
                 raise RuntimeError(f"Git command {' '.join(cmd)} failed: {res.stderr or res.stdout}")
+
+        # 执行 Cloudflare Pages 构建与部署
+        deploy_cmds = [
+            ["npm", "run", "build"],
+            ["npx", "wrangler", "pages", "deploy", "dist", "--project-name=dotblog-786", "--commit-dirty=true"]
+        ]
+
+        for cmd in deploy_cmds:
+            res = subprocess.run(cmd, cwd=self.blog_dir, capture_output=True, text=True)
+            if res.returncode != 0:
+                raise RuntimeError(f"Deploy command {' '.join(cmd)} failed: {res.stderr or res.stdout}")
 
         now_iso = datetime.now(timezone.utc).isoformat()
         
